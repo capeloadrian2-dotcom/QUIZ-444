@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Unidad 4 – Señalización Vial</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1c1018;
+    --surface: #2a1a24;
+    --card: #2e1c28;
+    --accent: #f472b6;
+    --accent2: #fb923c;
+    --green: #34d399;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --text: #fdf4ff;
+    --muted: #c084fc;
+    --radius: 18px;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Noto Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:24px 16px;
+    background-image:radial-gradient(ellipse at 0% 0%, rgba(244,114,182,0.1) 0%, transparent 50%), radial-gradient(ellipse at 100% 100%, rgba(251,146,60,0.08) 0%, transparent 50%);
+  }
+  .header { width:100%; max-width:700px; margin-bottom:28px; text-align:center; }
+  .unit-badge { display:inline-block; background:linear-gradient(135deg, var(--accent), var(--accent2)); color:#fff; font-weight:700; font-size:0.75rem; letter-spacing:2px; text-transform:uppercase; padding:5px 16px; border-radius:30px; margin-bottom:12px; }
+  .header h1 { font-family:'Black Han Sans',sans-serif; font-size:2.4rem; color:#fff; letter-spacing:1px; }
+  .header p { color:var(--muted); font-size:0.92rem; margin-top:5px; }
+  .stepper { display:flex; justify-content:center; gap:8px; margin-top:18px; }
+  .step { width:40px; height:6px; border-radius:3px; background:rgba(244,114,182,0.15); transition:all 0.3s; }
+  .step.active { background:var(--accent); width:60px; }
+  .step.done { background:rgba(52,211,153,0.6); }
+
+  .quiz-card { background:var(--card); border-radius:var(--radius); padding:32px; width:100%; max-width:700px; border:1px solid rgba(244,114,182,0.12); box-shadow:0 8px 50px rgba(0,0,0,0.5); animation:slideIn 0.35s ease; }
+  @keyframes slideIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+  .q-counter { font-size:0.78rem; font-weight:700; color:var(--accent); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; }
+  .q-type-badge { display:inline-block; font-size:0.72rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:4px 12px; border-radius:20px; margin-bottom:14px; background:rgba(244,114,182,0.1); color:var(--accent); border:1px solid rgba(244,114,182,0.25); }
+  .q-text { font-family:'Black Han Sans',sans-serif; font-size:1.12rem; line-height:1.5; margin-bottom:24px; color:#fff; letter-spacing:0.3px; }
+
+  /* SEÑAL VISUAL */
+  .signal-display { display:flex; justify-content:center; margin-bottom:22px; }
+  .signal-card { background:var(--surface); border:2px solid rgba(244,114,182,0.2); border-radius:16px; padding:24px 32px; text-align:center; min-width:180px; }
+  .signal-shape { font-size:4rem; display:block; margin-bottom:8px; }
+  .signal-desc { font-size:0.85rem; color:var(--muted); font-weight:600; }
+
+  /* OPTIONS */
+  .options { display:flex; flex-direction:column; gap:10px; }
+  .option { background:var(--surface); border:1.5px solid rgba(244,114,182,0.1); border-radius:12px; padding:14px 18px; cursor:pointer; font-size:0.96rem; font-weight:600; color:var(--text); transition:all 0.2s; display:flex; align-items:center; gap:12px; }
+  .option:hover:not(.disabled) { border-color:var(--accent); background:rgba(244,114,182,0.07); transform:translateX(5px); }
+  .option.correct { border-color:var(--green); background:rgba(52,211,153,0.1); color:var(--green); }
+  .option.wrong { border-color:var(--red); background:rgba(248,113,113,0.1); color:var(--red); }
+  .option.disabled { cursor:default; }
+  .opt-badge { width:28px; height:28px; border-radius:7px; background:rgba(244,114,182,0.1); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.8rem; color:var(--accent); flex-shrink:0; }
+
+  /* COLOR QUIZ */
+  .color-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .color-tile { border:2px solid rgba(244,114,182,0.12); border-radius:14px; padding:22px 14px; cursor:pointer; text-align:center; transition:all 0.25s; font-weight:700; font-size:0.95rem; }
+  .color-tile:hover:not(.disabled) { border-color:var(--accent); transform:scale(1.04); }
+  .color-tile.correct { border-color:var(--green) !important; outline:3px solid var(--green); }
+  .color-tile.wrong { border-color:var(--red) !important; outline:3px solid var(--red); opacity:0.7; }
+  .tile-emoji2 { font-size:2.5rem; display:block; margin-bottom:8px; }
+
+  /* TF */
+  .tf-options { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .tf-btn { background:var(--surface); border:2px solid rgba(244,114,182,0.12); border-radius:16px; padding:28px 16px; cursor:pointer; font-family:'Black Han Sans',sans-serif; font-size:1.1rem; text-align:center; transition:all 0.25s; }
+  .tf-btn .tf-icon { font-size:2.8rem; display:block; margin-bottom:8px; }
+  .tf-btn.true-btn:hover:not(.disabled) { border-color:var(--green); background:rgba(52,211,153,0.08); color:var(--green); }
+  .tf-btn.false-btn:hover:not(.disabled) { border-color:var(--red); background:rgba(248,113,113,0.08); color:var(--red); }
+  .tf-btn.correct { border-color:var(--green); background:rgba(52,211,153,0.1); color:var(--green); }
+  .tf-btn.wrong { border-color:var(--red); background:rgba(248,113,113,0.1); color:var(--red); }
+
+  .feedback { margin-top:18px; padding:14px 18px; border-radius:12px; font-size:0.92rem; font-weight:600; line-height:1.5; display:none; }
+  .feedback.show { display:block; animation:fadeIn 0.3s; }
+  .feedback.correct { background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.3); color:var(--green); }
+  .feedback.wrong { background:rgba(248,113,113,0.08); border:1px solid rgba(248,113,113,0.3); color:#fca5a5; }
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+
+  .btn-next { margin-top:20px; width:100%; padding:15px; background:linear-gradient(135deg, var(--accent), var(--accent2)); color:#fff; font-family:'Noto Sans',sans-serif; font-size:1rem; font-weight:700; border:none; border-radius:12px; cursor:pointer; letter-spacing:0.5px; text-transform:uppercase; display:none; transition:all 0.2s; }
+  .btn-next:hover { opacity:0.9; transform:translateY(-2px); box-shadow:0 6px 20px rgba(244,114,182,0.4); }
+  .btn-next.show { display:block; }
+
+  .results { text-align:center; width:100%; max-width:700px; }
+  .results-card { background:var(--card); border-radius:var(--radius); padding:42px 32px; border:1px solid rgba(244,114,182,0.15); }
+  .podium { display:flex; justify-content:center; gap:4px; margin:0 auto 24px; align-items:flex-end; height:80px; }
+  .podium-bar { width:40px; border-radius:4px 4px 0 0; background:rgba(244,114,182,0.15); transition:height 1s ease; }
+  .podium-bar.filled { background:linear-gradient(180deg, var(--accent), var(--accent2)); }
+  .score-txt { font-family:'Black Han Sans',sans-serif; font-size:3.5rem; color:var(--accent); }
+  .score-den { font-size:0.85rem; color:var(--muted); margin-bottom:16px; }
+  .results-title { font-family:'Black Han Sans',sans-serif; font-size:2rem; margin-bottom:8px; color:#fff; }
+  .results-msg { color:var(--muted); font-size:0.97rem; margin-bottom:28px; line-height:1.6; }
+  .btn-restart { background:linear-gradient(135deg, var(--accent), var(--accent2)); color:#fff; border:none; padding:14px 36px; border-radius:12px; font-family:'Noto Sans',sans-serif; font-size:1rem; font-weight:700; cursor:pointer; text-transform:uppercase; transition:all 0.2s; }
+  .btn-restart:hover { opacity:0.9; transform:translateY(-2px); }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="unit-badge">🚦 Unidad 4</div>
+  <h1>Señalización Vial</h1>
+  <p>El lenguaje de la carretera · 5 preguntas</p>
+  <div class="stepper" id="stepperRow">
+    <div class="step active" id="step0"></div>
+    <div class="step" id="step1"></div>
+    <div class="step" id="step2"></div>
+    <div class="step" id="step3"></div>
+    <div class="step" id="step4"></div>
+  </div>
+</div>
+
+<div class="quiz-card" id="quizCard"></div>
+<div class="results hidden" id="resultsScreen"></div>
+
+<script>
+const questions = [
+  {
+    type: 'signal',
+    counter: 'Pregunta 1 de 5',
+    badge: '🚦 Identifica la señal',
+    signal: { shape: '🔴⬛', desc: 'OCTÁGONO ROJO — Señal vertical' },
+    question: '¿Qué debe hacer el conductor ante esta señal regulatoria?',
+    options: [
+      'Reducir velocidad a 30 km/h y pasar con precaución si no hay vehículos',
+      'Detenerse COMPLETAMENTE antes de la línea de parada, aunque no haya tráfico',
+      'Ceder el paso a los vehículos que vengan por la vía principal',
+      'Solo detenerse si hay peatones cruzando en ese momento'
+    ],
+    correct: 1,
+    feedback: '✅ ¡Correcto! PARE significa detención TOTAL obligatoria. El conductor debe detenerse completamente antes de la línea de parada, independientemente de si hay tráfico o no. No hay excepciones.'
+  },
+  {
+    type: 'colorpick',
+    counter: 'Pregunta 2 de 5',
+    badge: '🎨 Elige el color correcto',
+    question: 'Las señales PREVENTIVAS (que advierten peligros como curvas, zonas escolares, animales) tienen este fondo y forma:',
+    options: [
+      { color: '#ffffff', text: '#333', emoji: '⬜', label: 'Fondo BLANCO · Círculo rojo', real_bg: '#ffffff' },
+      { color: '#facc15', text: '#333', emoji: '🟨', label: 'Fondo AMARILLO · Forma de rombo', real_bg: '#facc15' },
+      { color: '#22c55e', text: '#fff', emoji: '🟩', label: 'Fondo VERDE · Rectangular', real_bg: '#22c55e' },
+      { color: '#3b82f6', text: '#fff', emoji: '🟦', label: 'Fondo AZUL · Cuadrado', real_bg: '#3b82f6' }
+    ],
+    correct: 1,
+    feedback: '✅ ¡Correcto! Las señales PREVENTIVAS tienen fondo AMARILLO, símbolo negro y forma de ROMBO. Se ubican entre 90 y 225 metros antes del peligro para dar tiempo al conductor de reaccionar.'
+  },
+  {
+    type: 'truefalse',
+    counter: 'Pregunta 3 de 5',
+    badge: '✅ Verdadero o Falso',
+    question: 'La luz AMARILLA FIJA de un semáforo significa que se puede acelerar para pasar la intersección antes de que cambie a rojo.',
+    correct: false,
+    feedback: '❌ FALSO. El amarillo fijo significa PREPARARSE PARA DETENERSE. Si el conductor ya cruzó la línea de parada puede continuar con precaución, pero NO es señal de acelerar. Hacerlo es una infracción.'
+  },
+  {
+    type: 'multiple',
+    counter: 'Pregunta 4 de 5',
+    badge: '🔤 Opción múltiple',
+    question: 'Un vehículo transporta combustible. ¿En cuántos puntos del vehículo deben colocarse las placas ROMBO de carga peligrosa?',
+    options: [
+      'Solo en la parte posterior, visible para los vehículos que siguen detrás',
+      'En la parte anterior y posterior del vehículo',
+      'En la parte anterior, posterior y lateral del vehículo (tres puntos)',
+      'Solo en la cabina del conductor y en la documentación que porta'
+    ],
+    correct: 2,
+    feedback: '✅ ¡Correcto! Las placas rombo deben colocarse en TRES puntos: anterior, posterior y lateral. Esta señalización es obligatoria y puede salvar vidas de rescatistas en caso de accidente al identificar el tipo de peligro.'
+  },
+  {
+    type: 'multiple',
+    counter: 'Pregunta 5 de 5',
+    badge: '🔤 Opción múltiple',
+    question: '¿Qué color identifica a las señales informativas que muestran destinos y distancias en carreteras principales del Ecuador?',
+    options: [
+      'Azul — indica servicios como gasolineras y hospitales',
+      'Verde — indica destinos, distancias y rutas principales',
+      'Café/Marrón — indica sitios turísticos y áreas naturales',
+      'Blanco — indica nombres de calles en zonas urbanas'
+    ],
+    correct: 1,
+    feedback: '✅ ¡Correcto! Verde = destinos y distancias. Azul = servicios (gasolineras, hospitales). Café = turismo. Estas tres categorías junto con el blanco (regulatorias) forman el sistema de señalización informativa en Ecuador.'
+  }
+];
+
+let current = 0, score = 0, answered = false;
+
+function updateStepper() {
+  for (let i = 0; i < 5; i++) {
+    const s = document.getElementById(`step${i}`);
+    if (i < current) s.className = 'step done';
+    else if (i === current) s.className = 'step active';
+    else s.className = 'step';
+  }
+}
+
+function render() {
+  const q = questions[current];
+  answered = false;
+  updateStepper();
+  const card = document.getElementById('quizCard');
+  let html = `<div class="q-counter">${q.counter}</div><div class="q-type-badge">${q.badge}</div>`;
+
+  if (q.signal) html += `<div class="signal-display"><div class="signal-card"><span class="signal-shape">${q.signal.shape}</span><div class="signal-desc">${q.signal.desc}</div></div></div>`;
+
+  html += `<div class="q-text">${q.question}</div>`;
+
+  if (q.type === 'multiple' || q.type === 'signal') {
+    const lets = ['A','B','C','D'];
+    html += `<div class="options">`;
+    q.options.forEach((o, i) => html += `<div class="option" onclick="checkAns(${i})" id="opt${i}"><div class="opt-badge">${lets[i]}</div>${o}</div>`);
+    html += `</div>`;
+  } else if (q.type === 'truefalse') {
+    html += `<div class="tf-options">
+      <div class="tf-btn true-btn" onclick="checkTF(true)" id="tfTrue"><span class="tf-icon">✅</span>VERDADERO</div>
+      <div class="tf-btn false-btn" onclick="checkTF(false)" id="tfFalse"><span class="tf-icon">❌</span>FALSO</div>
+    </div>`;
+  } else if (q.type === 'colorpick') {
+    html += `<div class="color-grid">`;
+    q.options.forEach((o, i) => html += `<div class="color-tile" onclick="checkAns(${i})" id="opt${i}" style="background:${o.color};color:${o.text};"><span class="tile-emoji2">${o.emoji}</span>${o.label}</div>`);
+    html += `</div>`;
+  }
+
+  html += `<div class="feedback" id="feedbackBox"></div>
+    <button class="btn-next" id="btnNext" onclick="nextQ()">${current < questions.length - 1 ? '→ SIGUIENTE' : '🏁 VER RESULTADOS'}</button>`;
+  card.innerHTML = html;
+}
+
+function checkAns(sel) {
+  if (answered) return; answered = true;
+  const q = questions[current];
+  const ok = sel === q.correct;
+  if (ok) score++;
+  document.querySelectorAll('.option,.color-tile').forEach(e => e.classList.add('disabled'));
+  document.getElementById(`opt${sel}`).classList.add(ok ? 'correct' : 'wrong');
+  if (!ok) document.getElementById(`opt${q.correct}`).classList.add('correct');
+  showFB(ok, q.feedback);
+}
+
+function checkTF(val) {
+  if (answered) return; answered = true;
+  const q = questions[current];
+  const ok = val === q.correct;
+  if (ok) score++;
+  ['tfTrue','tfFalse'].forEach(id => document.getElementById(id).classList.add('disabled'));
+  document.getElementById(val ? 'tfTrue' : 'tfFalse').classList.add(ok ? 'correct' : 'wrong');
+  if (!ok) document.getElementById(q.correct ? 'tfTrue' : 'tfFalse').classList.add('correct');
+  showFB(ok, q.feedback);
+}
+
+function showFB(ok, text) {
+  const fb = document.getElementById('feedbackBox');
+  fb.className = `feedback show ${ok ? 'correct' : 'wrong'}`;
+  fb.innerHTML = text;
+  document.getElementById('btnNext').classList.add('show');
+}
+
+function nextQ() {
+  current++;
+  if (current >= questions.length) showResults();
+  else render();
+}
+
+function showResults() {
+  for (let i = 0; i < 5; i++) document.getElementById(`step${i}`).className = 'step done';
+  document.getElementById('quizCard').classList.add('hidden');
+  const pct = Math.round((score / questions.length) * 100);
+  const msg = pct === 100 ? '🏆 ¡Excelente! Dominas el lenguaje de la vía.' :
+              pct >= 80 ? '🎯 ¡Muy bien! Gran manejo de la señalización vial.' :
+              pct >= 60 ? '📚 Bien. Repasa los colores y formas de cada tipo de señal.' :
+              '🔄 Revisa la Unidad 4. Enfócate en señales regulatorias, preventivas e informativas.';
+  document.getElementById('resultsScreen').classList.remove('hidden');
+  document.getElementById('resultsScreen').innerHTML = `
+    <div class="results-card">
+      <div class="score-txt">${score}<span style="font-size:2rem;color:var(--muted)">/${questions.length}</span></div>
+      <div class="score-den">${pct}% correcto</div>
+      <div class="results-title">Resultado Final</div>
+      <div class="results-msg">${msg}</div>
+      <button class="btn-restart" onclick="restart()">↺ Intentar de nuevo</button>
+    </div>`;
+}
+function restart() {
+  current = 0; score = 0;
+  document.getElementById('quizCard').classList.remove('hidden');
+  document.getElementById('resultsScreen').classList.add('hidden');
+  render();
+}
+render();
+</script>
+</body>
+</html>
